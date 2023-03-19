@@ -14,9 +14,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	pstore := store.NewMongoProductStore(client.Database("mongo-products"))
+	astore := store.NewMongoUsersStore(client.Database("mongo-users"))
 
-	store := store.NewMongoProductStore(client.Database("mongo-products"))
-
-	server := api.NewProductHandler(store, ":4000")
+	server := api.NewApiServer(":4000", pstore, astore)
 	server.Run()
 }
