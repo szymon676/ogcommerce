@@ -50,6 +50,21 @@ func (s MongoProductStore) GetProductByName(ctx context.Context, name string) (*
 	return p, err
 }
 
+func (s MongoProductStore) UpdateProductByName(ctx context.Context, name string, product types.Product) error {
+	filter := bson.M{"name": name}
+	update := bson.M{
+		"$set": bson.M{
+			"name":        product.Name,
+			"description": product.Description,
+		},
+	}
+	_, err := s.db.Collection(s.coll).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s MongoProductStore) DeleteProductByName(ctx context.Context, name string) error {
 	filter := bson.M{"name": name}
 	_, err := s.db.Collection(s.coll).DeleteMany(ctx, filter)

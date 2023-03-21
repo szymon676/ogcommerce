@@ -10,6 +10,7 @@ type ProductsStorager interface {
 	GetProducts(ctx context.Context) ([]*types.Product, error)
 	InsertProduct(ctx context.Context, data types.Product) error
 	GetProductByName(ctx context.Context, name string) (*types.Product, error)
+	UpdateProductByName(ctx context.Context, name string, product types.Product) error
 	DeleteProductByName(ctx context.Context, name string) error
 }
 

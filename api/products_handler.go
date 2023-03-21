@@ -56,6 +56,26 @@ func (h ProductsHandler) handleGetProductByName(w http.ResponseWriter, r *http.R
 	return WriteJSON(w, 200, product)
 }
 
+func (h ProductsHandler) handleUpdateProductByName(w http.ResponseWriter, r *http.Request) error {
+	var reqProduct types.ReqProduct
+	path := mux.Vars(r)
+
+	if err := json.NewDecoder(r.Body).Decode(&reqProduct); err != nil {
+		return err
+	}
+
+	product, err := types.NewProductFromRequest(reqProduct)
+	if err != nil {
+		return err
+	}
+
+	if err := h.store.UpdateProductByName(r.Context(), path["name"], *product); err != nil {
+		return err
+	}
+
+	return WriteJSON(w, 202, "updated product successfully")
+}
+
 func (h ProductsHandler) handleDeleteProductByName(w http.ResponseWriter, r *http.Request) error {
 	path := mux.Vars(r)
 

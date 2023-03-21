@@ -4,11 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/szymon676/ogcommerce/store"
 	"github.com/szymon676/ogcommerce/types"
 )
@@ -16,12 +13,14 @@ import (
 const secret = "secret"
 
 type AuthHandler struct {
-	store store.UsersStorager
+	store      store.UsersStorager
+	jwtservice JwtService
 }
 
-func NewAuthHandler(astore store.UsersStorager) *AuthHandler {
+func NewAuthHandler(astore store.UsersStorager, jwtservice JwtService) *AuthHandler {
 	return &AuthHandler{
-		store: astore,
+		store:      astore,
+		jwtservice: jwtservice,
 	}
 }
 
@@ -36,7 +35,7 @@ func (h *AuthHandler) handleLoginUser(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	token, err := h.CreateJWT(&reqUser, r.Context())
+	token, err := h.jwtservice.CreateJWT(&reqUser, r.Context())
 
 	if err != nil {
 		return err
@@ -58,58 +57,5 @@ func (h AuthHandler) ValidateUser(ctx context.Context, vuser types.ReqUser, w ht
 		w.WriteHeader(http.StatusUnauthorized)
 		return errors.New("invaild password")
 	}
-	return nil
-}
-
-func (ah AuthHandler) CreateJWT(user *types.ReqUser, ctx context.Context) (string, error) {
-	account, _ := ah.store.GetUserByEmail(ctx, user.Email)
-
-	claims := &jwt.MapClaims{
-		"expiresAt": time.Now().Add(time.Hour * 24).Unix(),
-		"accountID": account.ID,
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString([]byte(secret))
-}
-
-func (ah AuthHandler) ParseJWT(r *http.Request) (*jwt.Token, error) {
-	cookie, err := r.Cookie("jwt")
-	if err != nil {
-		return nil, fmt.Errorf("%c", err)
-	}
-
-	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
-		}
-
-		return []byte(secret), nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("invalid JWT: %v", err)
-	}
-
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid JWT: token is not valid")
-	}
-
-	return token, nil
-}
-
-func CreateCookie(w http.ResponseWriter, token string) error {
-	expiration := time.Now().Add(24 * time.Hour)
-	cookie := http.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  expiration,
-		Path:     "/",
-		MaxAge:   604800,
-		SameSite: http.SameSiteNoneMode,
-	}
-
-	http.SetCookie(w, &cookie)
 	return nil
 }

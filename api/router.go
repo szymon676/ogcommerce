@@ -25,12 +25,14 @@ func NewApiServer(addr string, pstore store.ProductsStorager, astore store.Users
 func (s ApiServer) Run() {
 	router := mux.NewRouter()
 	p := NewProductHandler(s.pstore)
-	ah := NewAuthHandler(s.astore)
+	jwts := NewJWTService(s.astore)
+	ah := NewAuthHandler(s.astore, *jwts)
 
-	router.HandleFunc("/products", makeHTTPHanler(p.handlePostProduct)).Methods("POST")
+	router.HandleFunc("/products", jwts.AuthMiddleware(makeHTTPHanler(p.handlePostProduct))).Methods("POST")
 	router.HandleFunc("/products", makeHTTPHanler(p.handleGetProducts)).Methods("GET")
 	router.HandleFunc("/products/{name}", makeHTTPHanler(p.handleGetProductByName)).Methods("GET")
-	router.HandleFunc("/products/{name}", makeHTTPHanler(p.handleDeleteProductByName)).Methods("DELETE")
+	router.HandleFunc("/products/{name}", jwts.AuthMiddleware(makeHTTPHanler(p.handleDeleteProductByName))).Methods("DELETE")
+	router.HandleFunc("/products/{name}", jwts.AuthMiddleware(makeHTTPHanler(p.handleUpdateProductByName))).Methods("PUT")
 
 	router.HandleFunc("/login", makeHTTPHanler(ah.handleLoginUser)).Methods("POST")
 
