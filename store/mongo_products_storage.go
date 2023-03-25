@@ -41,17 +41,17 @@ func (s MongoProductStore) GetProducts(ctx context.Context) ([]*types.Product, e
 	return products, err
 }
 
-func (s MongoProductStore) GetProductByName(ctx context.Context, name string) (*types.Product, error) {
+func (s MongoProductStore) GetProduct(ctx context.Context, id string) (*types.Product, error) {
 	var (
-		res = s.db.Collection(s.coll).FindOne(ctx, bson.M{"name": name})
+		res = s.db.Collection(s.coll).FindOne(ctx, bson.M{"_id": id})
 		p   = &types.Product{}
 		err = res.Decode(p)
 	)
 	return p, err
 }
 
-func (s MongoProductStore) UpdateProductByName(ctx context.Context, name string, product types.Product) error {
-	filter := bson.M{"name": name}
+func (s MongoProductStore) UpdateProduct(ctx context.Context, id string, product types.Product) error {
+	filter := bson.M{"_id": id}
 	update := bson.M{
 		"$set": bson.M{
 			"name":        product.Name,
@@ -65,8 +65,8 @@ func (s MongoProductStore) UpdateProductByName(ctx context.Context, name string,
 	return nil
 }
 
-func (s MongoProductStore) DeleteProductByName(ctx context.Context, name string) error {
-	filter := bson.M{"name": name}
+func (s MongoProductStore) DeleteProduct(ctx context.Context, id string) error {
+	filter := bson.M{"_id": id}
 	_, err := s.db.Collection(s.coll).DeleteMany(ctx, filter)
 	if err != nil {
 		return err

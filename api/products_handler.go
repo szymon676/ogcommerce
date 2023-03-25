@@ -19,7 +19,7 @@ func NewProductHandler(store store.ProductsStorager) *ProductsHandler {
 	}
 }
 
-func (h ProductsHandler) handlePostProduct(w http.ResponseWriter, r *http.Request) error {
+func (h ProductsHandler) handleCreateProduct(w http.ResponseWriter, r *http.Request) error {
 	var reqProduct types.ReqProduct
 
 	if err := json.NewDecoder(r.Body).Decode(&reqProduct); err != nil {
@@ -45,9 +45,9 @@ func (h ProductsHandler) handleGetProducts(w http.ResponseWriter, r *http.Reques
 	return WriteJSON(w, http.StatusOK, products)
 }
 
-func (h ProductsHandler) handleGetProductByName(w http.ResponseWriter, r *http.Request) error {
+func (h ProductsHandler) handleGetProduct(w http.ResponseWriter, r *http.Request) error {
 	path := mux.Vars(r)
-	product, err := h.store.GetProductByName(r.Context(), path["name"])
+	product, err := h.store.GetProduct(r.Context(), path["id"])
 
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (h ProductsHandler) handleGetProductByName(w http.ResponseWriter, r *http.R
 	return WriteJSON(w, 200, product)
 }
 
-func (h ProductsHandler) handleUpdateProductByName(w http.ResponseWriter, r *http.Request) error {
+func (h ProductsHandler) handleUpdateProduct(w http.ResponseWriter, r *http.Request) error {
 	var reqProduct types.ReqProduct
 	path := mux.Vars(r)
 
@@ -69,17 +69,17 @@ func (h ProductsHandler) handleUpdateProductByName(w http.ResponseWriter, r *htt
 		return err
 	}
 
-	if err := h.store.UpdateProductByName(r.Context(), path["name"], *product); err != nil {
+	if err := h.store.UpdateProduct(r.Context(), path["id"], *product); err != nil {
 		return err
 	}
 
 	return WriteJSON(w, 202, "updated product successfully")
 }
 
-func (h ProductsHandler) handleDeleteProductByName(w http.ResponseWriter, r *http.Request) error {
+func (h ProductsHandler) handleDeleteProduct(w http.ResponseWriter, r *http.Request) error {
 	path := mux.Vars(r)
 
-	if err := h.store.DeleteProductByName(r.Context(), path["name"]); err != nil {
+	if err := h.store.DeleteProduct(r.Context(), path["id"]); err != nil {
 		return err
 	}
 

@@ -28,11 +28,11 @@ func (s ApiServer) Run() {
 	jwts := NewJWTService(s.astore)
 	ah := NewAuthHandler(s.astore, *jwts)
 
-	router.HandleFunc("/products", jwts.AuthMiddleware(makeHTTPHanler(p.handlePostProduct))).Methods("POST")
+	router.HandleFunc("/products", jwts.AuthMiddleware(makeHTTPHanler(p.handleCreateProduct))).Methods("POST")
 	router.HandleFunc("/products", makeHTTPHanler(p.handleGetProducts)).Methods("GET")
-	router.HandleFunc("/products/{name}", makeHTTPHanler(p.handleGetProductByName)).Methods("GET")
-	router.HandleFunc("/products/{name}", jwts.AuthMiddleware(makeHTTPHanler(p.handleDeleteProductByName))).Methods("DELETE")
-	router.HandleFunc("/products/{name}", jwts.AuthMiddleware(makeHTTPHanler(p.handleUpdateProductByName))).Methods("PUT")
+	router.HandleFunc("/products/{id}", makeHTTPHanler(p.handleGetProduct)).Methods("GET")
+	router.HandleFunc("/products/{id}", jwts.AuthMiddleware(makeHTTPHanler(p.handleDeleteProduct))).Methods("DELETE")
+	router.HandleFunc("/products/{id}", jwts.AuthMiddleware(makeHTTPHanler(p.handleUpdateProduct))).Methods("PUT")
 
 	router.HandleFunc("/login", makeHTTPHanler(ah.handleLoginUser)).Methods("POST")
 
