@@ -26,6 +26,9 @@ db.users.insertOne({
 })
 ```
 
+# Running : run entire app with docker-compose up, this will run:
+- server on port :4000
+- mongodb on port 27017
 #### write this command in mongo console to create account that will be used to login and acces admin routes.
 
 # API Routes
